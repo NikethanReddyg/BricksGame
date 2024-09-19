@@ -54,6 +54,7 @@ function initialize () {
         for (j=0; j<20; j++) {
             var x = b.cloneNode(true);
             bricks[i][j] = x;
+            bricks[i][j].style.visibility = "visible";
             wall.appendChild(x);
         }
         b.style.visibility = "hidden";
@@ -69,10 +70,74 @@ function hits_a_brick ( x, y, i, j ) {
             && y >= top && y <= top+brick.height);
 }
 
-function startGame () {
+// function startGame () {
+    
+// }
 
+// function resetGame () {
+
+// }
+
+
+function startGame() {
+    if (!started) {
+        started = true;
+        var angle = Math.random() * Math.PI/2 + Math.PI/4; // Random angle between π/4 and 3π/4
+        dx = Math.cos(angle);
+        dy = -Math.sin(angle);
+        moveBall();
+    }
 }
 
-function resetGame () {
+// function resetGame() {
+//     started = false;
+//     tries = 0;
+//     score = 0;
+//     updateScore();
+//     for (var i = 0; i < 4; i++) {
+//         for (var j = 0; j < 20; j++) {
+//             bricks[i][j].style.visibility = "visible";
+//         }
+//     }
+//     readyToKick();
+// }
 
+function moveBall() {
+    if (!started) return;
+
+    x= x + (dx * 10);
+    y = y + (dy *10);
+
+    // Check for collisions with walls
+    if (x <= 0 || x >= court_width - ball.width) dx = -dx;
+    if ( -y <= 0 || -y >= court_height - ball.width) dy = -dy;
+
+    // // Check for collision with paddle
+   // Check for collision with paddle
+//    if (-y <= paddle.height && (x > paddle.style.left && x < paddle.style.left + paddle.width)) {
+//         return;
+//     }
+    // Check for collisions with bricks
+    for (var i = 0; i < 4; i++) {
+        for (var j = 0; j < 20; j++) {
+            
+            if (hits_a_brick(x, y, i, j) && bricks[i][j].style.visibility === "visible") {
+                bricks[i][j].style.visibility = "hidden";
+                dy = -dy;
+                score++;
+                updateScore();
+                break;
+            }
+        }
+    }
+
+    ball.style.left = x + "px";
+    ball.style.top = y + "px";
+    console.log(paddle.style);
+    setTimeout(moveBall, 50);
+}
+
+function updateScore() {
+    var element  = document.getElementById("score");
+    element.innerText = score;
 }
