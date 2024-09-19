@@ -5,6 +5,7 @@ var tries = 0;    /* # of tries to clean the wall */
 var started = false;  /* false means ready to kick the ball */
 var ball, court, paddle, brick, msg;
 var court_height, court_width, paddle_left;
+var dv = 10;
 
 var bricks = new Array(4);  // rows of bricks
 var colors = ["red","blue","yellow","green"];
@@ -70,14 +71,6 @@ function hits_a_brick ( x, y, i, j ) {
             && y >= top && y <= top+brick.height);
 }
 
-// function startGame () {
-    
-// }
-
-// function resetGame () {
-
-// }
-
 
 function startGame() {
     if (!started) {
@@ -89,43 +82,56 @@ function startGame() {
     }
 }
 
-// function resetGame() {
-//     started = false;
-//     tries = 0;
-//     score = 0;
-//     updateScore();
-//     for (var i = 0; i < 4; i++) {
-//         for (var j = 0; j < 20; j++) {
-//             bricks[i][j].style.visibility = "visible";
-//         }
-//     }
-//     readyToKick();
-// }
+function resetGame() {
+    started = false;
+    tries = 0;
+    score = 0;
+    updateTries();
+    msg.innerText = "";
+    for (var i = 0; i < 4; i++) {
+        for (var j = 0; j < 20; j++) {
+            bricks[i][j].style.visibility = "visible";
+        }
+    }
+    readyToKick();
+}
 
 function moveBall() {
     if (!started) return;
 
-    x= x + (dx * 10);
-    y = y + (dy *10);
+    var level = document.getElementById('level');
 
-    // Check for collisions with walls
+    x= x + (dx * dv * level.value);
+    y = y + (dy * dv * level.value);
+
+    // collisions with walls
     if (x <= 0 || x >= court_width - ball.width) dx = -dx;
     if ( -y <= 0 || -y >= court_height - ball.width) dy = -dy;
 
-    // // Check for collision with paddle
-   // Check for collision with paddle
-//    if (-y <= paddle.height && (x > paddle.style.left && x < paddle.style.left + paddle.width)) {
-//         return;
-//     }
+    // collisions with paddle
+    if (y + ball.height >= pixels(paddle.style.top) ) {
+        if (x + ball.width >= pixels(paddle.style.left) && x <= pixels(paddle.style.left) + paddle.width) {
+            dy = -dy;
+            y = pixels(paddle.style.top)-ball.height;
+        } else {
+            // missed the paddle
+            tries++;
+            started = false;
+            updateTries();
+            readyToKick();
+        }
+    }
     // Check for collisions with bricks
     for (var i = 0; i < 4; i++) {
         for (var j = 0; j < 20; j++) {
-            
             if (hits_a_brick(x, y, i, j) && bricks[i][j].style.visibility === "visible") {
                 bricks[i][j].style.visibility = "hidden";
                 dy = -dy;
-                score++;
-                updateScore();
+                if(checkIfClear()){
+                    score=score+1;
+                    updateScore();
+                    msg.innerText = "All Bricks Cleared! Score++";
+                }
                 break;
             }
         }
@@ -133,10 +139,25 @@ function moveBall() {
 
     ball.style.left = x + "px";
     ball.style.top = y + "px";
-    console.log(paddle.style);
     setTimeout(moveBall, 50);
 }
 
+function checkIfClear(){
+    for ( var i = 0 ; i < 4; i++) {
+        for (var j=0 ; j < 20 ; j++) {
+            if (bricks[i][j].style.visibility !== "hidden"){
+                return false;
+            }
+        }
+    }
+    resetGame();
+    return true;
+}
+
+function updateTries() {
+    var element = document.getElementById("tries");
+    element.innerText = tries;
+}
 function updateScore() {
     var element  = document.getElementById("score");
     element.innerText = score;
