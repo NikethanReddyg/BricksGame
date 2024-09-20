@@ -76,8 +76,12 @@ function startGame() {
     if (!started) {
         started = true;
         var angle = Math.random() * Math.PI/2 + Math.PI/4; // Random angle between π/4 and 3π/4
-        dx = Math.cos(angle);
-        dy = -Math.sin(angle);
+        var level = parseInt(id("level").value, 10);
+        var initalSpeed = 10;
+        var speed = initalSpeed + (level - 1) * 10;
+
+        dx = speed * Math.cos(angle);
+        dy = -speed * Math.sin(angle);
         moveBall();
     }
 }
@@ -99,14 +103,19 @@ function resetGame() {
 function moveBall() {
     if (!started) return;
 
-    var level = document.getElementById('level');
 
-    x= x + (dx * dv * level.value);
-    y = y + (dy * dv * level.value);
+    x += dx ;
+    y += dy;
 
-    // collisions with walls
-    if (x <= 0 || x >= court_width - ball.width) dx = -dx;
-    if ( -y <= 0 || -y >= court_height - ball.width) dy = -dy;
+    if (x <= 0) {
+        dx = -dx;
+        x = 0;
+    }
+    if (x + ball.width >= court_width) {
+        dx = -dx;
+        x = court_width - ball.width;
+    }
+    if (  -y >= court_height - ball.width) dy = -dy;
 
     // collisions with paddle
     if (y + ball.height >= pixels(paddle.style.top) ) {
